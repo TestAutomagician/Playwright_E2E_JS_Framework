@@ -11,9 +11,9 @@ Features
 - AI-based test optimization
 
 Results
-✔ 40% faster execution  
-✔ 30% improved coverage  
-✔ Reduced flaky tests  
+  40% faster execution  
+  30% improved coverage  
+  Reduced flaky tests  
 
 Architecture
 (Explain clearly)
