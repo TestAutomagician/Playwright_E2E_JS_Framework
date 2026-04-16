@@ -1,23 +1,23 @@
-# 🚀 Enterprise QA Automation Framework
+Enterprise QA Automation Framework
 
-## 🧠 Overview
+Overview
 Scalable Playwright-based automation framework designed for enterprise applications, supporting UI, API,DB and CI/CD integration.
 
-## 🔥 Features
+Features
 - POM architecture
 - Parallel execution
 - Allure reporting
 - CI/CD integration (Jenkins + GitHub Actions)
 - AI-based test optimization
 
-## 📊 Results
+Results
 ✔ 40% faster execution  
 ✔ 30% improved coverage  
 ✔ Reduced flaky tests  
 
-## 🏗️ Architecture
+Architecture
 (Explain clearly)
 
-## 🚀 Run
+Run
 npm install  
 npx playwright test
