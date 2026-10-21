@@ -4,5 +4,7 @@
     "learnMoreTitle": "About us",
     "enrollTitle": "Enroll Form",
     "aboutUsTitle": "About us",
-    "aboutUsUrl": "/about.html"
+    "aboutUsUrl": "/about.html",
+    "token": "your-token-here", 
+    "expectedObjectCount": 13 
 }

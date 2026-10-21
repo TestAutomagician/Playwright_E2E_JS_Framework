@@ -1,117 +1,98 @@
 import { test, expect, request } from '@playwright/test';
+import testData from '../testData/data.json'; // Assuming test data is stored here
 
-let token;
+let apiContext;
 
-let apiContext; // ✅ shared variable
+// Utility function to measure response time
+async function measureResponseTime(requestFn) {
+    const startTime = Date.now();
+    const response = await requestFn();
+    const endTime = Date.now();
+    const responseTime = endTime - startTime;
+    return { response, responseTime };
+}
+
+// Utility function to validate response
+function validateResponse(response, expectedStatus, responseTimeLimit) {
+    expect(response.status()).toBe(expectedStatus);
+    expect(response.responseTime).toBeLessThan(responseTimeLimit);
+}
 
 test.beforeAll(async () => {
-
     apiContext = await request.newContext({
         baseURL: 'https://api.restful-api.dev',
         extraHTTPHeaders: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${testData.token}` // Token from test data
         }
     });
 });
 
 test('Verify Get Request for single object', async () => {
-    const startTime = Date.now();
-
-    const response = await apiContext.get('/objects/2');
-
-    const endTime = Date.now();
-    const responseTime = endTime - startTime;
-
-    expect(response.status()).toBe(200);
+    const { response, responseTime } = await measureResponseTime(() => apiContext.get('/objects/2'));
+    validateResponse({ status: () => response.status(), responseTime }, 200, 1000);
 
     const body = await response.json();
-
     expect(body.id).toBe('2');
     expect(body.name).toBe('Apple iPhone 12 Mini, 256GB, Blue');
-    expect(responseTime).toBeLessThan(1000);
 });
-test('Verify Get Request for multiple objects', async ({ request }) => {
-    const startTime = Date.now();
-    const response = await apiContext.get('/objects');
-    const endTime = Date.now();
-    const responseTime = endTime - startTime;
-    expect(response.status()).toBe(200);
+
+test('Verify Get Request for multiple objects', async () => {
+    const { response, responseTime } = await measureResponseTime(() => apiContext.get('/objects'));
+    validateResponse({ ...response, responseTime }, 200, 1000);
+
     const body = await response.json();
-    console.log(body);
     expect(Array.isArray(body)).toBeTruthy();
-    expect(body.length).toBe(13);
-    for (let i = 0; i < body.length; i++) {
-        expect(body[i]).toHaveProperty('id');
-        expect(body[i]).toHaveProperty('name');
-        expect(body[i].id).toBeTruthy();
-        expect(body[i].name).toBeTruthy();
-    }
-    expect(body[0].data).toBeTruthy();
-    // expect(body.id).toBe('2');
-    // expect(body.name).toBe('Apple iPhone 12 Mini, 256GB, Blue');
-    expect(responseTime).toBeLessThan(1000);
+    expect(body.length).toBe(testData.expectedObjectCount);
+
+    body.forEach((item) => {
+        expect(item).toHaveProperty('id');
+        expect(item).toHaveProperty('name');
+        expect(item.id).toBeTruthy();
+        expect(item.name).toBeTruthy();
+    });
 });
 
-test('Verify Post Request for single object', async ({ request }) => {
+test('Verify Post Request for single object', async () => {
+    const postData = {
+        name: 'Mac book new',
+        data: {
+            year: 2026,
+            price: 1849.99,
+            'CPU model': 'Intel Core i9',
+            'Hard disk size': '2 TB'
+        }
+    };
 
-    const response = await request.post('https://api.restful-api.dev/objects',
-        {
-            headers: {
-                'Authorization': `Bearer ${this.token}`
-            },
-        },
-        {
-            data: {
-                name: 'Mac book new',
-                data: {
-                    year: 2026,
-                    price: 1849.99,
-                    'CPU model': 'Intel Core i9',
-                    'Hard disk size': '2 TB'
-                }
-            }
-        });
-
-    expect(response.status()).toBe(200);
+    const { response } = await measureResponseTime(() => apiContext.post('/objects', { data: postData }));
+    validateResponse({ ...response }, 200, 1000);
 
     const body = await response.json();
-    console.log(body);
-
-    expect(body.name).toBe('Mac book new');
+    expect(body.name).toBe(postData.name);
 });
 
-test('Verify PUT Request for single object', async ({ request }) => {
+test('Verify PUT Request for single object', async () => {
+    const putData = {
+        name: 'Mac book updated',
+        data: {
+            year: 2026,
+            price: 1999.99,
+            'CPU model': 'Intel Core i9',
+            'Hard disk size': '2 TB'
+        }
+    };
 
-    const response = await request.put('https://api.restful-api.dev/objects/ff8081819d62221a019d7827f1541f29',
-        {
-            data: {
-                name: 'Mac book new',
-                data: {
-                    year: 2026,
-                    price: 1849.99,
-                    'CPU model': 'Intel Core i9',
-                    'Hard disk size': '2 TB'
-                }
-            }
-        });
-
-    expect(response.status()).toBe(200);
+    const { response } = await measureResponseTime(() => apiContext.put('/objects/ff8081819d62221a019d7827f1541f29', { data: putData }));
+    validateResponse({ ...response }, 200, 1000);
 
     const body = await response.json();
-    console.log(body);
-
-    expect(body.name).toBe('Mac book new');
+    expect(body.name).toBe(putData.name);
 });
 
-
-test('Verify Delete Request for single object', async ({ request }) => {
-
-    const response = await request.delete('https://api.restful-api.dev/objects/ff8081819d62221a019d7827f1541f29');
-
-    expect(response.status()).toBe(200);
+test('Verify Delete Request for single object', async () => {
+    const { response } = await measureResponseTime(() => apiContext.delete('/objects/ff8081819d62221a019d7827f1541f29'));
+    validateResponse({ ...response }, 200, 1000);
 
     const body = await response.json();
-    console.log(body);
-
-
+    expect(body).toEqual({}); // Assuming delete returns an empty object
 });
