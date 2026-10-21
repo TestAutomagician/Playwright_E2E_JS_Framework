@@ -15,9 +15,6 @@ Results
   30% improved coverage  
   Reduced flaky tests  
 
-Architecture
-(Explain clearly)
-
 Run
 npm install  
 npx playwright test
