@@ -1,48 +1,98 @@
-# 🚀 Enterprise QA Automation Framework
+# Playwright E2E JavaScript Framework
 
-## 🧠 Overview
-Scalable Playwright-based automation framework designed for enterprise applications, supporting UI, API, DB, and CI/CD integration. This framework is built to ensure robust and efficient testing workflows, enabling teams to deliver high-quality software faster.
+A JavaScript test-automation project built with [Playwright Test](https://playwright.dev/docs/test-intro). It contains browser UI tests, API test examples, reusable page objects and utilities, and a Jenkins pipeline.
 
-## 🔥 Features
+## What’s included
 
-### Page Object Model (POM) Architecture
-The framework follows the Page Object Model design pattern, which simplifies test maintenance and improves code reusability. Each page of the application is represented as a class, encapsulating its elements and actions.
+- **UI automation** for page content and browser interactions, including dialogs, frames, windows, forms, and navigation.
+- **Page Object Model examples** in `PageObjectModel/`.
+- **API test examples** for the public REST API at `https://api.restful-api.dev`.
+- **Database test example** using MySQL and the `mysql2` package.
+- **Shared helpers and sample data** in `API/`, `utils/`, and `testData/`.
+- **Playwright HTML reporting** and a Jenkins pipeline in `Jenkinsfile`.
 
-### Parallel Execution
-Run multiple tests simultaneously to save time and utilize resources efficiently. This feature is particularly useful for large test suites.
+Tests may visit external websites and APIs, so a network connection is required. Those services and their content can change independently of this project.
 
-### Allure Reporting
-Generate detailed and visually appealing test reports with Allure. These reports provide insights into test execution, including passed, failed, and skipped tests, along with screenshots and logs.
+## Requirements
 
-### CI/CD Integration
-Seamlessly integrate with Jenkins and GitHub Actions to automate test execution as part of your continuous integration and delivery pipelines. This ensures that tests are run consistently with every code change.
+- Node.js (an active LTS release is recommended)
+- npm
+- Chromium installed through Playwright
+- For the database example only: a reachable MySQL server with the database and test data expected by `tests/db.spec.js`
 
-### AI-Based Test Optimization
-Leverage AI-driven insights to optimize test execution. Identify redundant tests, prioritize critical test cases, and reduce overall execution time without compromising coverage.
+## Setup
 
-### API Testing Utilities
-Built-in utilities for API testing allow you to validate RESTful endpoints with ease. Perform CRUD operations, validate responses, and integrate API tests with your UI tests.
+From the repository root, install dependencies and the browser:
 
-### Database Interaction Support
-Test database operations directly within your test scripts. Validate data integrity, perform queries, and ensure that backend processes work as expected.
+```bash
+npm ci
+npx playwright install chromium
+```
 
-### Data-Driven Testing
-Support for data-driven testing enables you to run the same test with multiple sets of data. This is particularly useful for validating application behavior under various input conditions.
+If you do not have the lockfile available, use `npm install` instead of `npm ci`.
 
-## 📊 Results
-✔ 40% faster execution due to parallelism and optimized test workflows.  
-✔ 30% improved coverage with comprehensive UI, API, and database testing.  
-✔ Reduced flaky tests through robust design patterns and reliable test utilities.
+## Run tests
 
-## 🏗️ Architecture
-The framework is modular and extensible, allowing teams to add new features or customize existing ones. It is structured to separate concerns, making it easier to manage and scale.
+Run the complete Playwright suite:
 
-## 🚀 Run
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
-2. Execute tests:
-   ```bash
-   npx playwright test
-   ```
+```bash
+npx playwright test
+```
+
+Run tests with a visible browser, or run a specific file:
+
+```bash
+npx playwright test --headed
+npx playwright test tests/aboutUs.spec.js
+```
+
+Filter by a title or tag:
+
+```bash
+npx playwright test --grep "@smoke"
+```
+
+The configured project is Chromium. The HTML reporter writes a report to `playwright-report/`; open the most recent report with:
+
+```bash
+npx playwright show-report
+```
+
+## Configuration
+
+Playwright settings are in [`playwright.config.js`](./playwright.config.js):
+
+- Test files are discovered under `tests/`.
+- The default project is Chromium.
+- Tests run in parallel locally; on CI, retries are enabled and the worker count is limited to one.
+- The configured base URL is `https://vivtechguru.com`. Some tests use explicit URLs instead.
+
+The repository also defines `test:headless` and `test:headed` npm scripts. For explicit headed execution, use `npx playwright test --headed` as shown above.
+
+## Project structure
+
+| Path | Purpose |
+| --- | --- |
+| `tests/` | Playwright UI, API, and database test specs |
+| `PageObjectModel/` | Page object classes for site pages |
+| `API/` | API client, endpoint constants, and response helpers |
+| `utils/` | Data-reading and database utilities |
+| `testData/` | JSON test data |
+| `JSExample/` | Standalone JavaScript and Playwright learning examples |
+| `screenshot/` | Screenshots used by the project |
+| `playwright.config.js` | Playwright projects, defaults, and reporter configuration |
+| `Jenkinsfile` | Jenkins stages for dependency installation, browser installation, test execution, and reporting |
+
+## Database test setup
+
+The database test is an example that requires local MySQL setup; it is not a prerequisite for running browser or API tests. Before running `tests/db.spec.js`, configure the connection settings in `utils/dbUtils.js` for your environment and provide the database/table/record queried by that test. Do not commit real credentials.
+
+To run only the database spec after setup:
+
+```bash
+npx playwright test tests/db.spec.js
+```
+
+## CI
+
+The `Jenkinsfile` installs npm dependencies and Playwright browsers, runs the Playwright suite, and exposes the HTML report. Configure the Jenkins agent with Node.js/npm and the shell environment required by the pipeline.
